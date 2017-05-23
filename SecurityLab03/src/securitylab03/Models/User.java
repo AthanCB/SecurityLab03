@@ -5,11 +5,13 @@
  */
 package securitylab03.Models;
 
+import java.io.Serializable;
+
 /**
  *
  * @author PC
  */
-public class User {
+public class User implements Serializable{
     
     private String id;
     private String name;
