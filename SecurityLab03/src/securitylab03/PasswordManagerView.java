@@ -60,26 +60,35 @@ public class PasswordManagerView extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         }
-        for (int i = 0; i < Passwords.size(); i++) {
-            PasswordsString.add(Passwords.get(i).getDomain() + "    " + Passwords.get(i).getUsername() + "    " + Passwords.get(i).getPassword());
-        }
-        String[] names = {"Domain", "Όνομα Χρήστη", "Κωδικός Πρόσβασης"};        
-        model = new DefaultTableModel(names,0);        
-        for(int i=0 ; i<Passwords.size();i++)
+        
+       model = (DefaultTableModel)jTable1.getModel();
+         for(int i=0 ; i<Passwords.size();i++)
         {
-            Object data[]= {Passwords.get(i).getDomain(),Passwords.get(i).getUsername(),Passwords.get(i).getPassword()};
-            model.addRow(data);
-        }                
-        table = new JTable(model);
-        //table.setFont(new Font("Arial", Font.BOLD, 20));
-        table.show();
-        table.setSize(jPanel6.size());
-        jPanel6.add(table);
-        //list = new JList(PasswordsString.toArray());
-//        list.setFont(new Font("Arial", Font.BOLD, 20));
-//        list.show();
-//        list.setSize(jPanel6.size());
-//        jPanel6.add(list);
+             model.insertRow(0, new Object[]
+             {
+              Passwords.get(i).getDomain(),
+              Passwords.get(i).getUsername(),
+              Passwords.get(i).getPassword()
+             });
+        }      
+      
+        
+//        for (int i = 0; i < Passwords.size(); i++) {
+//            PasswordsString.add(Passwords.get(i).getDomain() + "    " + Passwords.get(i).getUsername() + "    " + Passwords.get(i).getPassword());
+//        }
+//        String[] names = {"Domain", "Όνομα Χρήστη", "Κωδικός Πρόσβασης"};        
+//        model = new DefaultTableModel(names,0);        
+//        for(int i=0 ; i<Passwords.size();i++)
+//        {
+//            Object data[]= {Passwords.get(i).getDomain(),Passwords.get(i).getUsername(),Passwords.get(i).getPassword()};
+//            model.addRow(data);
+//        }                
+//        table = new JTable(model);
+//        
+//        table.show();
+//        table.setSize(jPanel6.size());
+//        jPanel6.add(table);
+//       
         setResizable(false);
         setLocationRelativeTo(null);
     }
@@ -95,26 +104,16 @@ public class PasswordManagerView extends javax.swing.JFrame {
 
         jMenu1 = new javax.swing.JMenu();
         jPanel1 = new javax.swing.JPanel();
-        jPanel6 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PasswordManager - Αρχική Σελίδα");
 
         jPanel1.setBackground(new java.awt.Color(241, 242, 244));
-
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 537, Short.MAX_VALUE)
-        );
 
         jButton1.setText("Νέος Κωδικός");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -134,33 +133,43 @@ public class PasswordManagerView extends javax.swing.JFrame {
         jButton3.setText("Το προφίλ μου");
         jButton3.setPreferredSize(new java.awt.Dimension(97, 23));
 
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Domain", "Όνομα Χρήστη", "Κωδικός Πρόσβασης"
+            }
+        ));
+        jScrollPane1.setViewportView(jTable1);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                .addGap(31, 31, 31)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(34, 34, 34)
-                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(591, 591, 591))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -171,7 +180,9 @@ public class PasswordManagerView extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
@@ -231,6 +242,7 @@ public class PasswordManagerView extends javax.swing.JFrame {
     private javax.swing.JButton jButton3;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
 }
