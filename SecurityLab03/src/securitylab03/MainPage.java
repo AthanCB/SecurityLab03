@@ -1,5 +1,6 @@
 package securitylab03;
 
+import classLibrary.CryptoGen;
 import java.awt.Color;
 import java.io.EOFException;
 import java.io.File;
@@ -34,20 +35,23 @@ public class MainPage extends javax.swing.JFrame {
     String sKey;
     String authHash;
 
+    //constructor για την εμφάνιση αρχικού παραθύρου
     public MainPage() {
+        //δημιουργία των γραφικών 
         initComponents();
+        jLabel4.setBackground(Color.white);
+
+        // λίστα με τους υπάρχοντες χρήστες, που υπάρχουν στο αρχείο
         Users = new ArrayList<>();
         try {
+            //εύρεση για το αρχείο Users
             File users = new File("Users\\" + "Users.txt");
             if (users.exists()) {
-
                 in = new ObjectInputStream(new FileInputStream(users));
                 while (true) {
                     Users.add(((User) in.readObject()));
                 }
-
             }
-
         } catch (FileNotFoundException ex) {
             System.out.println("File not Found!");
         } catch (ClassNotFoundException ex) {
@@ -61,67 +65,7 @@ public class MainPage extends javax.swing.JFrame {
         }
         setTitle("Password Manager");
         setLocationRelativeTo(null);
-
     }
-
-    public void authHashGen() {
-        String algorithm = "PBKDF2WithHmacSHA1";
-        String P = jPasswordField1.getText();
-        String S = jTextField1.getText();
-        int c = 1000;
-        int dkLen = 16;
-
-        KeySpec spec = new PBEKeySpec(sKey.toCharArray(), P.getBytes(), c, dkLen);
-        try {
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
-            byte[] key = skf.generateSecret(spec).getEncoded();
-            authHash = toHex(key);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(PasswordManagerView.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(MainPage.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void sKeyGen() throws InvalidKeySpecException {
-        String algorithm = "PBKDF2WithHmacSHA1";
-        String P = jPasswordField1.getText();
-        String S = null;
-        try {
-            if (jTextField1.getText() != null) {
-                S = jTextField1.getText();
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Κενά Στοιχεία", "Μήνυμα Λάθους", JOptionPane.ERROR_MESSAGE);
-        }
-
-        int c = 2000;
-        int dkLen = 16;
-
-        try {
-
-            KeySpec spec = new PBEKeySpec(P.toCharArray(), S.getBytes(), c, dkLen);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
-            byte[] key = skf.generateSecret(spec).getEncoded();
-            sKey = toHex(key);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(PasswordManagerView.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception ex) {
-
-        }
-    }
-
-    private String toHex(byte[] array) throws NoSuchAlgorithmException {
-        BigInteger bi = new BigInteger(1, array);
-        String hex = bi.toString(16);
-        int paddingLength = (array.length * 2) - hex.length();
-        if (paddingLength > 0) {
-            return String.format("%0" + paddingLength + "d", 0) + hex;
-        } else {
-            return hex;
-        }
-    }
-
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -136,6 +80,7 @@ public class MainPage extends javax.swing.JFrame {
         jPasswordField1 = new javax.swing.JPasswordField();
         jButton3 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -172,6 +117,8 @@ public class MainPage extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -190,7 +137,9 @@ public class MainPage extends javax.swing.JFrame {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                             .addComponent(jPasswordField1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(29, 29, 29)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(275, 275, 275)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -212,7 +161,9 @@ public class MainPage extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jButton1)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jLabel4))
                 .addGap(16, 16, 16)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -234,28 +185,36 @@ public class MainPage extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    // κουμπί εγγραφής
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        //άνοιγμα νέου παραθύρου για εγγραφή νέου χρήστη
         Signup su = new Signup();
         su.show();
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    //κουμπί εισόδου
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-
         try {
-            sKeyGen();
-            authHashGen();
-            int c = 0;
+            //δημιουργία αντικειμένου της κλάσσης CryptoGen για την κρυπτογράφηση
+            CryptoGen c = new CryptoGen(jPasswordField1.getText(), jTextField1.getText());
+            //συμμετρικό κλειδί για τη παραγωγή του off hash για έλεγχο του χρήστη
+            sKey = c.sKeyGen();
+            // σύγκριση του δωθέντος κωδικού του χρήστη με τα υπάρχοντα passwords στο αρχείο
+            authHash = c.authHashGen();
+            boolean find = false;
             if (jPasswordField1.getText() != null && jTextField1.getText() != null) {
                 for (User user : Users) {
+                    // δύο έλεγχοι, ονόματος και κωδικού του κάθε χρήστη στο αρχείο
                     if (user.getUsername().equals(jTextField1.getText())
                             && user.getPassword().equals(authHash)) {
-                        PasswordManagerView view = new PasswordManagerView(Users.get(0));
+                        //άνοιγμα νέου παραθύρου για τη διαχείριση κωδικών, domain του χρήστη
+                        PasswordManagerView view = new PasswordManagerView(user,sKey);
                         view.show();
                         this.hide();
-                        c++;
+                        find = true;
                     }
                 }
-                if (c == 0) {
+                if (find == false) {
                     JOptionPane.showMessageDialog(null, "Τα στοιχεία που δώσατε δεν είναι σωστά", "Μήνυμα Λάθους", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
@@ -266,69 +225,41 @@ public class MainPage extends javax.swing.JFrame {
         } catch (NullPointerException ex) {
             JOptionPane.showMessageDialog(null, "Κενά Στοιχεία", "Μήνυμα Λάθους", JOptionPane.ERROR_MESSAGE);
         }
-
-
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    // εμφάνιση πιστοποιητικού του χρήστη
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if (jTextField1.getText() != null) {
             boolean find = false;
+            //έλεγχος του δωθέντος username αν υπάρχει στους αποθηκευμένους χρήστες 
+            //για να βρεθεί και να κρατήσει το πιστοποιητικό του
             for (User user : Users) {
                 if (user.getUsername().equals(jTextField1.getText())) {
-
                     chooser = new JFileChooser("Users\\" + user.getUsername());
-
-                    int returnVal = chooser.showOpenDialog(this);
-
-                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    int returnVal = chooser.showOpenDialog(this);   
+                    //αν βρεθεί στο αρχείο το εφανίζει
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {                        
                         certfile = chooser.getSelectedFile();
-                        jButton1.setText(certfile.getName());
-                        jButton1.setBackground(Color.red);
-                        jButton1.setForeground(Color.white);
+                        jLabel4.setText(certfile.getName());
+                        jLabel4.setBackground(Color.white);
+
                     }
                     find = true;
                 }
 
             }
-            if(find==false)
+            // αν δε βρέθηκε με το δωθέν όνομα κάτι αντίστοιχο στο αρχείο
+            if (find == false) {
                 JOptionPane.showMessageDialog(null, "Συμπληρώστε όνομα χρήστη για να επιλέξετε πιστοποιητικό", "Μήνυμα Λάθους", JOptionPane.ERROR_MESSAGE);
-            
+            }
+
         }
     }//GEN-LAST:event_jButton1ActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainPage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainPage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainPage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainPage.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the form */
+        //εκκίνηση εφαρμογής και εμφάνιση αρχικού παραθύρου
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new MainPage().setVisible(true);
-
             }
         });
     }
@@ -341,6 +272,7 @@ public class MainPage extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JTextField jTextField1;

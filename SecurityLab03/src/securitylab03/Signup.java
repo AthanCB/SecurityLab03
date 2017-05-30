@@ -5,6 +5,7 @@
  */
 package securitylab03;
 
+import classLibrary.CryptoGen;
 import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
@@ -47,10 +48,6 @@ import org.bouncycastle.util.io.pem.PemWriter;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 import securitylab03.Models.User;
 
-/**
- *
- * @author PC
- */
 public class Signup extends javax.swing.JFrame implements Serializable {
 
     ObjectInputStream in;
@@ -61,20 +58,28 @@ public class Signup extends javax.swing.JFrame implements Serializable {
     String sKey;
     String authHash;
 
+    //constructor 
     public Signup() {
+        //δημιουργία παραθύρου/γραφικών για την εγγραφή νέου χρήστη
         initComponents();
         setLocationRelativeTo(null);
         setTitle("Εγγραφή Χρήστη");
+        //δημιουργία λίστας για τους χρήστες που υπάρχουν στο αρχείο
         Users = new ArrayList<>();
     }
 
+    //δημιουργία των δύο κλειδιών και του certificate αρχείου
+    //μέσω της library bouncy castle οι παρακάτω εντολές κλπ
     public void Cert() {
+        //για τη χρησιμοποίηση μεθόδων της Security πρέπει να δημιουργηθεί ένας provider 
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        // δημιουργία κλειδιού με RSA αλγόριθμο και των στοιχείων του certificate
         KeyPairGenerator keyPairGenerator;
-        Date validityBeginDate = new Date(System.currentTimeMillis());
-        // in 2 years
+        // αποθήκευση της τωρινής ημερομηνίας για την αποθήκευση του κωδικού για ένα διάστημα
+        Date validityBeginDate = new Date(System.currentTimeMillis());        
         Date validityEndDate = new Date(System.currentTimeMillis() + 1 * 365 * 24 * 60 * 60 * 1000); //1 xronos
         try {
+            // δημιουργία του κλειδιού μέσω RSA
             keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
             keyPairGenerator.initialize(1024, new SecureRandom());
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -82,6 +87,7 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             X509Principal dnName = new X509Principal("CN=" + jTextField1.getText());
             X509Principal dnAppName = new X509Principal("CN=" + "PMcert");
 
+            //ο κωδικός κρατιέται για ένα συγκεκριμένο διάστημα για τον χρήστη
             certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
             certGen.setSubjectDN(dnName);
             certGen.setIssuerDN(dnAppName); // use the same
@@ -89,31 +95,28 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             certGen.setNotAfter(validityEndDate);
             certGen.setPublicKey(keyPair.getPublic());
             certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-
             try {
-
+                //δημιουργία keystore και certificate  
                 KeyStore ks = null;
                 ks = KeyStore.getInstance(KeyStore.getDefaultType());
-
+                // φόρτωση στο cert
                 X509Certificate cert = certGen.generate(keyPair.getPrivate(), "BC");
-
                 ks.load(null, null);
-
                 ks.setCertificateEntry("PMcert", cert);
-
+                // γράψιμο στο αρχείο του public και private κλειδιού μέσω του PempWriter
                 PemWriter pemWriter = new PemWriter(new FileWriter("Users\\" + jTextField1.getText() + "\\publickey.pem"));
                 pemWriter.writeObject(new PemObject("CERTIFICATE REQUEST", cert.getPublicKey().getEncoded()));
                 pemWriter.flush();
-
                 pemWriter = new PemWriter(new FileWriter("Users\\" + jTextField1.getText() + "\\privatekey.pem"));
                 pemWriter.writeObject(new PemObject("CERTIFICATE REQUEST", cert.getEncoded()));
                 pemWriter.flush();
 
-                File file = new File("Users\\" + jTextField1.getText() + "\\" + jTextField1.getText() +".cer" );
-                byte[] buf = cert.getEncoded();
+                //δημιουργία πιστοποιητικού με bytes
+                File file = new File("Users\\" + jTextField1.getText() + "\\" + jTextField1.getText() + ".cer");
+                byte[] bytes = cert.getEncoded();
 
                 FileOutputStream os = new FileOutputStream(file);
-                os.write(buf);
+                os.write(bytes);
                 os.close();
 
             } catch (CertificateEncodingException | IllegalStateException | SignatureException | InvalidKeyException ex) {
@@ -135,54 +138,6 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             e1.printStackTrace();
         }
 
-    }
-    public void authHashGen(){
-        String algorithm = "PBKDF2WithHmacSHA1";
-        String P = jPasswordField1.getText();
-        String S = jTextField1.getText();
-        int c = 1000;
-        int dkLen = 16;
-        
-        KeySpec spec =  new PBEKeySpec(sKey.toCharArray(), P.getBytes(), c, dkLen);
-        try {
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
-            byte [] key = skf.generateSecret(spec).getEncoded();
-            authHash = toHex(key);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(PasswordManagerView.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(MainPage.class.getName()).log(Level.SEVERE, null, ex);
-        } 
-    }
-    
-    public void sKeyGen() throws InvalidKeySpecException{
-        String algorithm = "PBKDF2WithHmacSHA1";
-        String P = jPasswordField1.getText();
-        String S = jTextField1.getText();
-        int c = 2000;
-        int dkLen = 16;
-        
-        KeySpec spec =  new PBEKeySpec(P.toCharArray(), S.getBytes(), c, dkLen);
-        try {
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
-            byte [] key = skf.generateSecret(spec).getEncoded();
-            sKey = toHex(key);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(PasswordManagerView.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-      private String toHex(byte[] array) throws NoSuchAlgorithmException
-    {
-        BigInteger bi = new BigInteger(1, array);
-        String hex = bi.toString(16);
-        int paddingLength = (array.length * 2) - hex.length();
-        if(paddingLength > 0)
-        {
-            return String.format("%0"  +paddingLength + "d", 0) + hex;
-        }else{
-            return hex;
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -297,7 +252,6 @@ public class Signup extends javax.swing.JFrame implements Serializable {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
@@ -321,18 +275,22 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             return;
         }
         try {
-            sKeyGen();
-             authHashGen();
+            //Φτιάχνουμε sKey και authHash για να τα χρησιμοποιήσουμε στο password
+            CryptoGen c = new CryptoGen(jPasswordField1.getText(), jTextField1.getText());
+            sKey = c.sKeyGen();
+            authHash = c.authHashGen();
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         }
-       
+
+        // δημιουργία νέου χρήστη με τα δωθέντα στοιχεία
         User user = new User();
         user.setId("1");
         user.setEmail(jTextField2.getText());
         user.setUsername(jTextField1.getText());
         user.setPassword(authHash);
         try {
+            // Παίρνουμε όλους τους χρήστες και τους βάζουμε στην λίστα μας
             File users = new File("Users\\" + "Users.txt");
             if (users.exists()) {
                 in = new ObjectInputStream(new FileInputStream(users));
@@ -349,14 +307,14 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         } catch (EOFException e) {
 
-        } catch (IOException ex) {
+        } catch (IOException  ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         try {
-            // f = new File("Users.txt");
+            //Προσθέτουμε όλους τους χρήστες στο αρχείο
             Users.add(user);
 
             File dir = new File("Users\\" + user.getUsername());
@@ -367,7 +325,7 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             for (int i = 0; i < Users.size(); i++) {
                 oos.writeObject(Users.get(i));
             }
-            //Users.clear();
+            Users.clear();
 
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
