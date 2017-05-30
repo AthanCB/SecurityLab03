@@ -31,10 +31,14 @@ import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.swing.JOptionPane;
 import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -54,6 +58,8 @@ public class Signup extends javax.swing.JFrame implements Serializable {
     FileOutputStream fout = null;
     ObjectOutputStream oos = null;
     ArrayList<User> Users;
+    String sKey;
+    String authHash;
 
     public Signup() {
         initComponents();
@@ -74,7 +80,7 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
             X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
             X509Principal dnName = new X509Principal("CN=" + jTextField1.getText());
-            X509Principal dnAppName = new X509Principal("CN=" + "bolpm");
+            X509Principal dnAppName = new X509Principal("CN=" + "PMcert");
 
             certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
             certGen.setSubjectDN(dnName);
@@ -129,6 +135,54 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             e1.printStackTrace();
         }
 
+    }
+    public void authHashGen(){
+        String algorithm = "PBKDF2WithHmacSHA1";
+        String P = jPasswordField1.getText();
+        String S = jTextField1.getText();
+        int c = 1000;
+        int dkLen = 16;
+        
+        KeySpec spec =  new PBEKeySpec(sKey.toCharArray(), P.getBytes(), c, dkLen);
+        try {
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
+            byte [] key = skf.generateSecret(spec).getEncoded();
+            authHash = toHex(key);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(PasswordManagerView.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(MainPage.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+    }
+    
+    public void sKeyGen() throws InvalidKeySpecException{
+        String algorithm = "PBKDF2WithHmacSHA1";
+        String P = jPasswordField1.getText();
+        String S = jTextField1.getText();
+        int c = 2000;
+        int dkLen = 16;
+        
+        KeySpec spec =  new PBEKeySpec(P.toCharArray(), S.getBytes(), c, dkLen);
+        try {
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
+            byte [] key = skf.generateSecret(spec).getEncoded();
+            sKey = toHex(key);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(PasswordManagerView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+      private String toHex(byte[] array) throws NoSuchAlgorithmException
+    {
+        BigInteger bi = new BigInteger(1, array);
+        String hex = bi.toString(16);
+        int paddingLength = (array.length * 2) - hex.length();
+        if(paddingLength > 0)
+        {
+            return String.format("%0"  +paddingLength + "d", 0) + hex;
+        }else{
+            return hex;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -266,11 +320,18 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             JOptionPane.showMessageDialog(null, "Μη σωστή μορφή email");
             return;
         }
+        try {
+            sKeyGen();
+             authHashGen();
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
         User user = new User();
         user.setId("1");
         user.setEmail(jTextField2.getText());
         user.setUsername(jTextField1.getText());
-        user.setPassword(jPasswordField1.getText());
+        user.setPassword(authHash);
         try {
             File users = new File("Users\\" + "Users.txt");
             if (users.exists()) {

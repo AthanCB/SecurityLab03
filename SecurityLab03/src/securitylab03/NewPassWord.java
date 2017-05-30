@@ -1,4 +1,3 @@
-
 package securitylab03;
 
 import java.io.EOFException;
@@ -10,9 +9,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.swing.JOptionPane;
 import securitylab03.Models.Password;
 import securitylab03.Models.User;
@@ -21,18 +27,20 @@ import securitylab03.Models.User;
  *
  * @author PC
  */
-public class NewPassWord extends javax.swing.JFrame implements Serializable{
+public class NewPassWord extends javax.swing.JFrame implements Serializable {
 
-     ObjectInputStream in;
+    ObjectInputStream in;
     File f;
     FileOutputStream fout = null;
     ObjectOutputStream oos = null;
     ArrayList<Password> Passwords;
     User user;
-    
+    String sKey;
+
     public NewPassWord(User user) {
         initComponents();
         this.user = user;
+        
         Passwords = new ArrayList<>();
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -42,8 +50,6 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
     private NewPassWord() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -157,32 +163,35 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
     //SUBMIT BUTTON
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if(!jPasswordField2.getText().equals(jPasswordField5.getText()))
-        {
-            JOptionPane.showMessageDialog(null,"Μη ταύτιση κωδικού επαλήθευσης");
+        if (!jPasswordField2.getText().equals(jPasswordField5.getText())) {
+            JOptionPane.showMessageDialog(null, "Μη ταύτιση κωδικού επαλήθευσης");
             return;
         }
+        String pw = jPasswordField2.getText();
+        Cipher cipher = null;
         Password password = new Password();
         password.setDomain(jTextField1.getText());
         password.setUsername(jTextField2.getText());
-        password.setPassword(jPasswordField2.getText());
+        password.setPassword(pw);
 
+        
         try {
-            File pws = new File("Users\\"+user.getUsername() + "\\Passwords.txt");
-            if(pws.exists()){
-                in = new ObjectInputStream(new FileInputStream("Users\\"+user.getUsername() + "\\Passwords.txt"));
-            while(true){
-                Passwords.add(((Password)in.readObject()));}
+
+            File pws = new File("Users\\" + user.getUsername() + "\\Passwords.txt");
+            if (pws.exists()) {
+                in = new ObjectInputStream(new FileInputStream("Users\\" + user.getUsername() + "\\Passwords.txt"));
+                while (true) {
+                    Passwords.add(((Password) in.readObject()));
+                }
             }
-            
+
         } catch (FileNotFoundException ex) {
             System.out.println("File not Found!");
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (EOFException e){
+        } catch (EOFException e) {
 
         } catch (IOException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
@@ -191,9 +200,9 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
         try {
 
             Passwords.add(password);
-            fout = new FileOutputStream("Users\\"+user.getUsername() + "\\Passwords.txt");
+            fout = new FileOutputStream("Users\\" + user.getUsername() + "\\Passwords.txt");
             oos = new ObjectOutputStream(fout);
-            for(int i=0;i<Passwords.size();i++){
+            for (int i = 0; i < Passwords.size(); i++) {
                 oos.writeObject(Passwords.get(i));
             }
             Passwords.clear();
@@ -203,7 +212,7 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
         } catch (IOException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         }
-        JOptionPane.showMessageDialog(null,"Επιτυχής προσθήκη νέου domain");
+        JOptionPane.showMessageDialog(null, "Επιτυχής προσθήκη νέου domain");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

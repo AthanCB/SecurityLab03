@@ -14,10 +14,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -42,10 +48,13 @@ public class PasswordManagerView extends javax.swing.JFrame {
     FileOutputStream fout = null;
     ObjectOutputStream oos = null;
     User user;
+    String sKey;
+    
 
     public PasswordManagerView(User user) {
         initComponents();
         this.user = user;
+        
         Passwords = new ArrayList<Password>();
         PasswordsString = new ArrayList<String>();
         try {
@@ -78,6 +87,10 @@ public class PasswordManagerView extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }
 
+    
+    
+  
+    
     private PasswordManagerView() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
