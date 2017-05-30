@@ -17,11 +17,30 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.bouncycastle.x509.X509V1CertificateGenerator;
 import securitylab03.Models.User;
 
 /**
@@ -41,6 +60,75 @@ public class Signup extends javax.swing.JFrame implements Serializable {
         setLocationRelativeTo(null);
         setTitle("Εγγραφή Χρήστη");
         Users = new ArrayList<>();
+    }
+
+    public void Cert() {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        KeyPairGenerator keyPairGenerator;
+        Date validityBeginDate = new Date(System.currentTimeMillis());
+        // in 2 years
+        Date validityEndDate = new Date(System.currentTimeMillis() + 1 * 365 * 24 * 60 * 60 * 1000); //1 xronos
+        try {
+            keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+            keyPairGenerator.initialize(1024, new SecureRandom());
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
+            X509Principal dnName = new X509Principal("CN=" + jTextField1.getText());
+            X509Principal dnAppName = new X509Principal("CN=" + "bolpm");
+
+            certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
+            certGen.setSubjectDN(dnName);
+            certGen.setIssuerDN(dnAppName); // use the same
+            certGen.setNotBefore(validityBeginDate);
+            certGen.setNotAfter(validityEndDate);
+            certGen.setPublicKey(keyPair.getPublic());
+            certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
+
+            try {
+
+                KeyStore ks = null;
+                ks = KeyStore.getInstance(KeyStore.getDefaultType());
+
+                X509Certificate cert = certGen.generate(keyPair.getPrivate(), "BC");
+
+                ks.load(null, null);
+
+                ks.setCertificateEntry("PMcert", cert);
+
+                PemWriter pemWriter = new PemWriter(new FileWriter("Users\\" + jTextField1.getText() + "\\publickey.pem"));
+                pemWriter.writeObject(new PemObject("CERTIFICATE REQUEST", cert.getPublicKey().getEncoded()));
+                pemWriter.flush();
+
+                pemWriter = new PemWriter(new FileWriter("Users\\" + jTextField1.getText() + "\\privatekey.pem"));
+                pemWriter.writeObject(new PemObject("CERTIFICATE REQUEST", cert.getEncoded()));
+                pemWriter.flush();
+
+                File file = new File("Users\\" + jTextField1.getText() + "\\" + jTextField1.getText() +".cer" );
+                byte[] buf = cert.getEncoded();
+
+                FileOutputStream os = new FileOutputStream(file);
+                os.write(buf);
+                os.close();
+
+            } catch (CertificateEncodingException | IllegalStateException | SignatureException | InvalidKeyException ex) {
+
+            } catch (KeyStoreException e1) {
+                e1.printStackTrace();
+            } catch (NoSuchAlgorithmException e1) {
+                e1.printStackTrace();
+            } catch (NoSuchProviderException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } catch (CertificateException e1) {
+                e1.printStackTrace();
+            }
+        } catch (NoSuchAlgorithmException e1) {
+            e1.printStackTrace();
+        } catch (NoSuchProviderException e1) {
+            e1.printStackTrace();
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -169,27 +257,31 @@ public class Signup extends javax.swing.JFrame implements Serializable {
         if (!jCheckBox1.isSelected()) {
             JOptionPane.showMessageDialog(null, "Υποχρεωτική η Αποδοχή Όρων Χρήσης");
             return;
-        }        
-        if(!jPasswordField1.getText().equals(jPasswordField3.getText()))
-        {
+        }
+        if (!jPasswordField1.getText().equals(jPasswordField3.getText())) {
             JOptionPane.showMessageDialog(null, "Μη ταύτιση κωδικού επιβεβαίωσης");
             return;
         }
-        if(!jTextField2.getText().contains("@"))
-        {
+        if (!jTextField2.getText().contains("@")) {
             JOptionPane.showMessageDialog(null, "Μη σωστή μορφή email");
             return;
-        }        
+        }
         User user = new User();
         user.setId("1");
         user.setEmail(jTextField2.getText());
         user.setUsername(jTextField1.getText());
         user.setPassword(jPasswordField1.getText());
         try {
-            in = new ObjectInputStream(new FileInputStream("Users.txt"));
-            while (true) {
-                Users.add(((User) in.readObject()));
+            File users = new File("Users\\" + "Users.txt");
+            if (users.exists()) {
+                in = new ObjectInputStream(new FileInputStream(users));
+
+                while (true) {
+                    Users.add(((User) in.readObject()));
+                }
+
             }
+
         } catch (FileNotFoundException ex) {
             System.out.println("File not Found!");
         } catch (ClassNotFoundException ex) {
@@ -198,12 +290,18 @@ public class Signup extends javax.swing.JFrame implements Serializable {
 
         } catch (IOException ex) {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         try {
             // f = new File("Users.txt");
             Users.add(user);
-            fout = new FileOutputStream("Users.txt");
+
+            File dir = new File("Users\\" + user.getUsername());
+            dir.mkdir();
+            Cert();
+            fout = new FileOutputStream("Users\\" + "Users.txt");
             oos = new ObjectOutputStream(fout);
             for (int i = 0; i < Users.size(); i++) {
                 oos.writeObject(Users.get(i));
@@ -216,7 +314,7 @@ public class Signup extends javax.swing.JFrame implements Serializable {
             Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println(Users.size());
-        JOptionPane.showMessageDialog(null,"ΕΠΙΤΥΧΗΣ ΕΓΓΡΑΦΗ ΝΕΟΥ ΧΡΗΣΤΗ");
+        JOptionPane.showMessageDialog(null, "Επιτυχής εγγραφή νέου χρήστη.");
         this.hide();
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -261,7 +359,9 @@ public class Signup extends javax.swing.JFrame implements Serializable {
                 new Signup().setVisible(true);
             }
         });
+
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

@@ -41,13 +41,15 @@ public class PasswordManagerView extends javax.swing.JFrame {
     File f;
     FileOutputStream fout = null;
     ObjectOutputStream oos = null;
+    User user;
 
-    public PasswordManagerView() {
+    public PasswordManagerView(User user) {
         initComponents();
+        this.user = user;
         Passwords = new ArrayList<Password>();
         PasswordsString = new ArrayList<String>();
         try {
-            in = new ObjectInputStream(new FileInputStream("Passwords.txt"));
+            in = new ObjectInputStream(new FileInputStream("Users\\" + user.getUsername() + "/Passwords.txt"));
             while (true) {
                 Passwords.add(((Password) in.readObject()));
             }
@@ -72,25 +74,12 @@ public class PasswordManagerView extends javax.swing.JFrame {
              });
         }      
       
-        
-//        for (int i = 0; i < Passwords.size(); i++) {
-//            PasswordsString.add(Passwords.get(i).getDomain() + "    " + Passwords.get(i).getUsername() + "    " + Passwords.get(i).getPassword());
-//        }
-//        String[] names = {"Domain", "Όνομα Χρήστη", "Κωδικός Πρόσβασης"};        
-//        model = new DefaultTableModel(names,0);        
-//        for(int i=0 ; i<Passwords.size();i++)
-//        {
-//            Object data[]= {Passwords.get(i).getDomain(),Passwords.get(i).getUsername(),Passwords.get(i).getPassword()};
-//            model.addRow(data);
-//        }                
-//        table = new JTable(model);
-//        
-//        table.show();
-//        table.setSize(jPanel6.size());
-//        jPanel6.add(table);
-//       
         setResizable(false);
         setLocationRelativeTo(null);
+    }
+
+    private PasswordManagerView() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**
@@ -189,7 +178,7 @@ public class PasswordManagerView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        NewPassWord np = new NewPassWord();
+        NewPassWord np = new NewPassWord(user);
         np.show();
         //this.hide();
     }//GEN-LAST:event_jButton1ActionPerformed

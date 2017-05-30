@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package securitylab03;
 
 import java.io.EOFException;
@@ -32,13 +28,19 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
     FileOutputStream fout = null;
     ObjectOutputStream oos = null;
     ArrayList<Password> Passwords;
+    User user;
     
-    public NewPassWord() {
+    public NewPassWord(User user) {
         initComponents();
+        this.user = user;
         Passwords = new ArrayList<>();
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         setLocationRelativeTo(null);
         setTitle("PasswordManager - Νέος Κωδικός");
+    }
+
+    private NewPassWord() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     
@@ -169,9 +171,13 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
         password.setPassword(jPasswordField2.getText());
 
         try {
-            in = new ObjectInputStream(new FileInputStream("Passwords.txt"));
+            File pws = new File("Users\\"+user.getUsername() + "\\Passwords.txt");
+            if(pws.exists()){
+                in = new ObjectInputStream(new FileInputStream("Users\\"+user.getUsername() + "\\Passwords.txt"));
             while(true){
                 Passwords.add(((Password)in.readObject()));}
+            }
+            
         } catch (FileNotFoundException ex) {
             System.out.println("File not Found!");
         } catch (ClassNotFoundException ex) {
@@ -185,7 +191,7 @@ public class NewPassWord extends javax.swing.JFrame implements Serializable{
         try {
 
             Passwords.add(password);
-            fout = new FileOutputStream("Passwords.txt");
+            fout = new FileOutputStream("Users\\"+user.getUsername() + "\\Passwords.txt");
             oos = new ObjectOutputStream(fout);
             for(int i=0;i<Passwords.size();i++){
                 oos.writeObject(Passwords.get(i));

@@ -1,9 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package securitylab03;
+
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import static java.lang.System.in;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import securitylab03.Models.User;
 
 /**
  *
@@ -11,11 +21,14 @@ package securitylab03;
  */
 public class MainPage extends javax.swing.JFrame {
 
-    /**
-     * Creates new form MainFrame
-     */
+     ObjectInputStream in;
+    File f;
+    FileOutputStream fout = null;
+    ObjectOutputStream oos = null;
+    ArrayList<User> Users;
     public MainPage() {
         initComponents();
+        Users = new ArrayList<>();
         setTitle("Password Manager");
         setLocationRelativeTo(null);
     }
@@ -129,7 +142,27 @@ public class MainPage extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        PasswordManagerView view = new PasswordManagerView();
+        try {
+            File users = new File("Users\\" + "Users.txt");
+            if (users.exists()) {
+                in = new ObjectInputStream(new FileInputStream(users));
+                while (true) {
+                    Users.add(((User) in.readObject()));
+                }
+            }
+            
+        } catch (FileNotFoundException ex) {
+            System.out.println("File not Found!");
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (EOFException e) {
+
+        } catch (IOException ex) {
+            Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Signup.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        PasswordManagerView view = new PasswordManagerView(Users.get(0));
         view.show();
         this.hide();
     }//GEN-LAST:event_jButton3ActionPerformed
